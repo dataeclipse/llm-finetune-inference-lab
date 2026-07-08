@@ -39,7 +39,7 @@ Both implement full parameter sharding. FSDP (`FULL_SHARD` ≈ ZeRO-3) is
 native PyTorch: fewer dependencies, `SHARDED_STATE_DICT` checkpoints scale to
 large models, first-class `torch.compile` support. DeepSpeed adds mature CPU
 and NVMe offload (`offload_optimizer.device: cpu`) which trades step time for
-capacity — the practical route to fine-tune 70B-class models on limited GPU
+capacity - the practical route to fine-tune 70B-class models on limited GPU
 counts.
 
 ## Offload

@@ -6,9 +6,9 @@ Accepted
 
 ## Context
 
-DPO needs (prompt, chosen, rejected) triples. Common shortcuts — sampling
+DPO needs (prompt, chosen, rejected) triples. Common shortcuts - sampling
 two model outputs and ranking them with an LLM judge, or using a public
-generic preference set — either inherit judge noise or do not target the
+generic preference set - either inherit judge noise or do not target the
 task. The training set already contains verified gold SQL.
 
 ## Decision
@@ -21,7 +21,7 @@ becomes `chosen` (`lab train pairs`).
 
 ## Consequences
 
-- Every pair encodes a real, verifiable error of the current policy — the
+- Every pair encodes a real, verifiable error of the current policy - the
   preference signal is grounded in execution semantics, not judge opinion.
 - Pair quality is deterministic and auditable; the miner is unit-tested with
   scripted generators.

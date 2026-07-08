@@ -25,15 +25,17 @@ def compute_perplexity(config: LabConfig, model_path: str, split: str = "val") -
     total_tokens = 0
     for row in rows:
         messages = row["messages"]
-        tokens = tokenizer.apply_chat_template(
+        encoded = tokenizer.apply_chat_template(
             messages,
             return_tensors="pt",
+            return_dict=True,
             truncation=True,
             max_length=config.model.max_seq_length,
         ).to(device)
+        input_ids = encoded["input_ids"]
         with torch.no_grad():
-            output = model(tokens, labels=tokens)
-        count = tokens.shape[-1] - 1
+            output = model(input_ids, labels=input_ids)
+        count = input_ids.shape[-1] - 1
         total_loss += float(output.loss) * count
         total_tokens += count
     perplexity = math.exp(total_loss / total_tokens) if total_tokens else float("inf")

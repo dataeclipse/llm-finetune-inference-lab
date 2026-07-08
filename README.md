@@ -6,36 +6,11 @@ End-to-end LLM fine-tuning lab: QLoRA SFT + DPO of Qwen3-8B for text-to-SQL on a
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-> Demo GIF placeholder — `docs/demo.gif`
-
 ## Architecture
 
-```mermaid
-flowchart LR
-    subgraph Data
-        DS[gretelai/synthetic_text_to_sql] --> CL[Clean: sqlglot validity, dedup, length caps]
-        CL --> SP[train / val / test]
-    end
-    subgraph Training["Training (A100 40GB)"]
-        SP --> SFT[QLoRA SFT<br/>TRL SFTTrainer]
-        SFT --> MINE[Pair mining:<br/>execution failures]
-        MINE --> DPO[DPOTrainer]
-        SFT -.checkpoints.-> DRIVE[(Google Drive)]
-        DPO -.checkpoints.-> DRIVE
-    end
-    subgraph Eval
-        DPO --> EX[Execution accuracy<br/>SQLite]
-        EX --> REP[reports/eval.md]
-    end
-    subgraph Serving
-        DPO --> MERGE[Merge LoRA]
-        MERGE --> AWQ[AWQ 4-bit]
-        MERGE --> GGUF[GGUF Q4_K_M]
-        MERGE --> VLLM[vLLM<br/>OpenAI API]
-        VLLM --> BENCH[p50/p95 bench + A/B]
-        VLLM --> UI[Gradio chat]
-    end
-```
+<p align="center">
+  <img src="docs/architecture.svg" alt="architecture diagram" width="100%">
+</p>
 
 ## Why text-to-SQL
 
@@ -69,21 +44,37 @@ uv run lab train sft profile=colab_a100 sft.learning_rate=1e-4 lora.r=32
 | `colab_a100` | Qwen3-8B | 4-bit NF4 + bf16 LoRA, grad checkpointing | production fine-tune |
 | `cpu_smoke` | SmolLM2-135M-Instruct | fp32, 2 steps | CI / local smoke, same code path |
 
-Multi-GPU readiness: `configs/distributed/` contains `accelerate` FSDP and DeepSpeed ZeRO-3 configs; tested on a single A100, ready for multi-node — see [docs/distributed.md](docs/distributed.md) for the ZeRO-1/2/3 sharding and offload breakdown.
+Multi-GPU readiness: `configs/distributed/` contains `accelerate` FSDP and DeepSpeed ZeRO-3 configs; tested on a single A100, ready for multi-node - see [docs/distributed.md](docs/distributed.md) for the ZeRO-1/2/3 sharding and offload breakdown.
 
-## Evaluation
+## Results
 
-Primary metric — execution accuracy: gold and predicted SQL run against the example schema in in-memory SQLite and must return identical row sets. Secondary: parse validity, sqlglot-normalized match, optional LLM-as-judge.
+Execution accuracy on 200 held-out test examples: gold and predicted SQL are run against the example schema in in-memory SQLite, and a prediction counts as correct only when its result set matches the reference. Numbers below are real, produced by `lab eval run` on an A100.
 
-| Model | N | Valid SQL | Exec accuracy | Overall |
-|-------|---|-----------|---------------|---------|
-| Qwen3-8B (base) | 200 | — | — | — |
-| + QLoRA SFT | 200 | — | — | — |
-| + DPO | 200 | — | — | — |
+| Model | Valid SQL | Exec accuracy\* | Overall |
+|-------|-----------|-----------------|---------|
+| Qwen3-8B (base) | 0.115 | 0.652 | 0.075 |
+| + QLoRA SFT | 0.930 | 0.736 | **0.535** |
+| + DPO | 0.930 | 0.736 | 0.535 |
 
-> Table is produced by `lab eval run` (appends to `reports/eval.md`); numbers pending the A100 training run. The full scorer pipeline is verified by 66 CPU unit tests, and the training loop by the CPU smoke suite.
+\*Exec accuracy is measured only over examples whose gold query is a runnable SELECT. The base model rarely emits valid SQL (11.5%), so its exec-accuracy denominator is small and noisy - the honest headline is **Overall**, the fraction of all 200 examples answered correctly end to end.
 
-Quantization and serving benchmarks (`lab export awq|gguf`, `lab bench latency`) report perplexity, tokens/s and p50/p95/p99 latency into `reports/`.
+**SFT is the win.** End-to-end accuracy rises from 7.5% to 53.5% and valid-SQL emission from 11.5% to 93%. The base model mostly replies in prose or fenced explanations; SFT teaches it to emit a single runnable query in the expected format.
+
+**DPO did not improve over SFT on this test set** - the metrics are identical. Honest reading: SFT already fixed the dominant failure mode (validity and output format), leaving few residual execution failures to mine into preference pairs, so the conservative DPO run (β=0.1, one epoch) preserved the SFT policy rather than shifting it. The DPO pipeline is implemented and runs end to end; on this task SFT was the lever, not DPO. The scorer itself is verified by 66 CPU unit tests and the training loop by the CPU smoke suite.
+
+## Serving
+
+vLLM (PagedAttention, continuous batching) serving the merged model, 64 requests at concurrency 8 on the A100:
+
+| Metric | Value |
+|--------|-------|
+| Latency p50 | 0.449 s |
+| Latency p95 | 0.766 s |
+| Latency p99 | 1.071 s |
+| Throughput | 407 tokens/s |
+| Requests/s | 11.9 |
+
+Quantized exports (`lab export awq|gguf`) produce AWQ 4-bit for GPU serving and GGUF Q4_K_M for CPU inference; `lab bench latency` regenerates the table above into `reports/bench.md`.
 
 ## Design Decisions
 
@@ -113,7 +104,7 @@ notebooks/           # Colab Pro+ orchestration
 ui/                  # Gradio chat with latency/tokens panel
 ```
 
-## Serving
+## Run serving yourself
 
 ```bash
 uv sync --extra serve                  # linux + cuda

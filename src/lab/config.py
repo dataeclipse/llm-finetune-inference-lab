@@ -119,6 +119,7 @@ class LabConfig:
     serve: ServeSettings = field(default_factory=ServeSettings)
     wandb: WandbSettings = field(default_factory=WandbSettings)
     drive_root: str = ""
+    work_root: str = ""
     profile_name: str = "default"
 
 

@@ -35,6 +35,8 @@ serve = [
 ]
 quant = [
     "autoawq>=0.2.9; sys_platform == 'linux'",
+    "sentencepiece>=0.2",
+    "protobuf>=5.0",
 ]
 ui = [
     "gradio>=5.34",
@@ -79,6 +81,7 @@ extend-immutable-calls = ["typer.Argument", "typer.Option"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S105", "S106", "ASYNC", "S603", "S607"]
+"tests/test_local_generate.py" = ["E402", "S105", "S106", "ASYNC"]
 "src/lab/config.py" = ["S104"]
 "src/lab/data/format.py" = ["S311"]
 "src/lab/monitoring/gpu.py" = ["S603", "S607"]

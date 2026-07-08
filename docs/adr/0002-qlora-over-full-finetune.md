@@ -7,7 +7,7 @@ Accepted
 ## Context
 
 Full bf16 fine-tuning of an 8B model with Adam needs roughly 130GB of GPU
-memory (16 bytes/parameter for weights, gradients and optimizer state) —
+memory (16 bytes/parameter for weights, gradients and optimizer state) -
 far beyond a single A100 40GB. Options: full fine-tune on rented multi-GPU,
 LoRA on bf16 weights (~19GB base + adapter overhead), or QLoRA (4-bit NF4
 base + bf16 LoRA adapters).

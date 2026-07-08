@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Text-to-SQL evaluation options: exact string match (brittle — `>=101` and
+Text-to-SQL evaluation options: exact string match (brittle - `>=101` and
 `>100` differ textually but agree semantically), LLM-as-judge (subjective,
 costs an extra model call, and its errors correlate with the errors of the
 model being judged), or execution accuracy (run both queries, compare result
@@ -21,7 +21,7 @@ A layered scorer (`lab/eval/sql_exec.py`):
 2. Validity: does the prediction parse at all.
 3. For SELECT-family gold queries: build the schema (with inline INSERTs) in
    an in-memory SQLite database, execute both queries, compare row sets
-   order-insensitively — the primary correctness signal.
+   order-insensitively - the primary correctness signal.
 4. For non-SELECT gold queries: sqlglot-normalized string equality.
 5. LLM-as-judge exists as a secondary, clearly labelled metric.
 

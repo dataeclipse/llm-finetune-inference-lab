@@ -20,7 +20,7 @@ htmlcov/
 .env.*
 !.env.example
 
-# ML artifacts — never commit weights or data
+# ML artifacts - never commit weights or data
 /data/
 !/data/.gitkeep
 /models/

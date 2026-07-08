@@ -1,6 +1,10 @@
 # @package _global_
+# Small LoRA adapters live on Drive (resumable across sessions); large
+# merged/quantized weights and reports live on local disk to avoid the
+# free-tier Google Drive quota.
 profile_name: colab_a100
 drive_root: /content/drive/MyDrive/llm-lab
+work_root: /content/work
 
 model:
   name: Qwen/Qwen3-8B
@@ -30,10 +34,10 @@ dpo:
 
 eval:
   num_examples: 200
-  report_path: ${drive_root}/reports/eval.md
+  report_path: ${work_root}/reports/eval.md
 
 serve:
-  model_path: ${drive_root}/checkpoints/merged
+  model_path: ${work_root}/merged
 
 wandb:
   enabled: true

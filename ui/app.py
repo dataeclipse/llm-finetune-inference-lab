@@ -35,7 +35,7 @@ def build_demo(base_url: str, model: str) -> Any:
     with gr.Blocks(title="text-to-SQL lab") as demo:
         gr.Markdown(f"## text-to-SQL assistant\nServing `{model}` from `{base_url}`")
         chatbot = gr.Chatbot(type="messages", height=480)
-        stats_box = gr.Markdown("latency: – · tokens: – · speed: –")
+        stats_box = gr.Markdown("latency: - · tokens: - · speed: -")
         prompt_box = gr.Textbox(
             placeholder="Paste a schema and ask a question...", show_label=False
         )

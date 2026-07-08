@@ -14,8 +14,8 @@ Serving candidates: vLLM, TGI, TensorRT-LLM, llama.cpp.
 
 vLLM is the primary server (PagedAttention, continuous batching, native
 OpenAI API). The launcher shells out to `vllm serve` and health-checks the
-endpoint. All client code — benchmarks, A/B tests, pair mining, the Gradio
-UI — talks to the `InferenceClient` abstraction whose only implementation
+endpoint. All client code - benchmarks, A/B tests, pair mining, the Gradio
+UI - talks to the `InferenceClient` abstraction whose only implementation
 requirement is an OpenAI-compatible endpoint, so TGI or TensorRT-LLM drop in
 by changing a URL.
 
