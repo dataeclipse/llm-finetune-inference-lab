@@ -148,3 +148,27 @@ def test_collect_split_stats(tmp_path: Path) -> None:
     stats = collect_split_stats(tmp_path / "train.jsonl")
     assert stats["prompt_words"]["count"] > 0
     assert stats["completion_words"]["mean"] > 0
+
+
+def test_collect_split_stats_raw_rows(tmp_path: Path) -> None:
+    config = load_config([f"data.output_dir={tmp_path.as_posix()}", "data.target_examples=20"])
+    prepare_dataset(config, raw=make_corpus(30))
+    stats = collect_split_stats(tmp_path / "test.jsonl")
+    assert stats["prompt_words"]["count"] > 0
+    assert stats["completion_words"]["mean"] > 0
+
+
+def test_report_stats_writes_markdown(tmp_path: Path) -> None:
+    from lab.data.stats import report_stats
+
+    config = load_config([f"data.output_dir={tmp_path.as_posix()}", "data.target_examples=20"])
+    prepare_dataset(config, raw=make_corpus(30))
+    report = report_stats(config)
+    assert "# Dataset Statistics" in report
+    assert "## train" in report
+    assert "## test" in report
+    assert (tmp_path / "stats.md").exists()
+
+
+def test_length_stats_empty() -> None:
+    assert length_stats([]) == {"count": 0.0}

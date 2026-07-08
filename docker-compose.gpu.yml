@@ -1,0 +1,48 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    command:
+      - "--model"
+      - "/models/merged"
+      - "--served-model-name"
+      - "qwen3-8b-sql"
+      - "--max-model-len"
+      - "4096"
+      - "--gpu-memory-utilization"
+      - "0.9"
+    volumes:
+      - ./checkpoints/merged:/models/merged:ro
+      - hf_cache:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 40
+
+  ui:
+    build: .
+    command:
+      - "python"
+      - "ui/app.py"
+      - "--base-url"
+      - "http://vllm:8000/v1"
+      - "--model"
+      - "qwen3-8b-sql"
+    ports:
+      - "7860:7860"
+    depends_on:
+      vllm:
+        condition: service_healthy
+
+volumes:
+  hf_cache:

@@ -125,4 +125,10 @@ markers = [
 
 [tool.coverage.run]
 source = ["src/lab"]
-omit = ["src/lab/ui/*", "src/lab/distributed/*"]
+omit = [
+    "src/lab/training/sft.py",
+    "src/lab/training/dpo.py",
+    "src/lab/training/common.py",
+    "src/lab/eval/local_generate.py",
+    "src/lab/eval/perplexity.py",
+]
