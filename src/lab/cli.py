@@ -154,5 +154,71 @@ def eval_perplexity(
     typer.echo(f"perplexity({split}) = {value:.3f}")
 
 
+serve_app = typer.Typer(no_args_is_help=True)
+app.add_typer(serve_app, name="serve", help="Inference serving")
+bench_app = typer.Typer(no_args_is_help=True)
+app.add_typer(bench_app, name="bench", help="Benchmarks and A/B tests")
+
+
+@serve_app.command("vllm")
+def serve_vllm(overrides: list[str] = typer.Argument(None)) -> None:
+    from lab.serving.vllm_server import launch_vllm
+
+    config = setup(overrides or [])
+    process = launch_vllm(config)
+    process.wait()
+
+
+@bench_app.command("latency")
+def bench_latency(
+    base_url: str = typer.Option("http://localhost:8000/v1"),
+    concurrency: int = typer.Option(8),
+    requests: int = typer.Option(64),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.serving.bench import run_benchmark
+
+    config = setup(overrides or [])
+    report = run_benchmark(
+        config, base_url=base_url, concurrency=concurrency, total_requests=requests
+    )
+    typer.echo(
+        f"p50={report.latency_p50:.3f}s p95={report.latency_p95:.3f}s "
+        f"tps={report.throughput_tokens_per_second:.1f}"
+    )
+
+
+@bench_app.command("ab")
+def bench_ab(
+    base_url_a: str = typer.Option(..., help="OpenAI-compatible endpoint for model A"),
+    base_url_b: str = typer.Option(..., help="OpenAI-compatible endpoint for model B"),
+    model_a: str = typer.Option("model-a"),
+    model_b: str = typer.Option("model-b"),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.serving.ab_test import run_ab_test
+
+    config = setup(overrides or [])
+    result = run_ab_test(
+        config, base_url_a=base_url_a, base_url_b=base_url_b, model_a=model_a, model_b=model_b
+    )
+    typer.echo(f"{result.model_a}={result.accuracy_a:.3f} {result.model_b}={result.accuracy_b:.3f}")
+
+
+@bench_app.command("gpu")
+def bench_gpu(
+    output: str = typer.Option("reports/gpu_samples.csv"),
+    duration: float = typer.Option(60.0),
+    interval: float = typer.Option(5.0),
+) -> None:
+    from pathlib import Path
+
+    from lab.monitoring.gpu import sample_to_csv
+
+    configure_logging()
+    samples = sample_to_csv(Path(output), duration_seconds=duration, interval_seconds=interval)
+    typer.echo(f"captured {samples} samples to {output}")
+
+
 if __name__ == "__main__":
     app()
