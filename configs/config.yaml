@@ -1,0 +1,4 @@
+defaults:
+  - lab_schema
+  - profile: cpu_smoke
+  - _self_

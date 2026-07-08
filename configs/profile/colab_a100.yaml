@@ -1,0 +1,39 @@
+# @package _global_
+profile_name: colab_a100
+drive_root: /content/drive/MyDrive/llm-lab
+
+model:
+  name: Qwen/Qwen3-8B
+  max_seq_length: 2048
+  load_in_4bit: true
+  attn_implementation: sdpa
+
+data:
+  target_examples: 4000
+
+sft:
+  epochs: 2.0
+  per_device_batch_size: 4
+  gradient_accumulation: 4
+  learning_rate: 2.0e-4
+  gradient_checkpointing: true
+  bf16: true
+  save_steps: 200
+  output_dir: ${drive_root}/checkpoints/sft
+
+dpo:
+  per_device_batch_size: 2
+  gradient_accumulation: 8
+  bf16: true
+  output_dir: ${drive_root}/checkpoints/dpo
+  pairs_path: ${drive_root}/data/dpo_pairs.jsonl
+
+eval:
+  num_examples: 200
+  report_path: ${drive_root}/reports/eval.md
+
+serve:
+  model_path: ${drive_root}/checkpoints/merged
+
+wandb:
+  enabled: true

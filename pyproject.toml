@@ -74,8 +74,12 @@ src = ["src", "tests"]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF", "ASYNC", "S", "PTH"]
 ignore = ["S101"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Argument", "typer.Option"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S105", "S106", "ASYNC", "S603", "S607"]
+"src/lab/config.py" = ["S104"]
 "src/lab/monitoring/gpu.py" = ["S603", "S607"]
 "src/lab/serving/vllm_server.py" = ["S603"]
 "src/lab/quantization/gguf.py" = ["S603"]

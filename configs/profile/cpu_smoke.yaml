@@ -1,0 +1,42 @@
+# @package _global_
+profile_name: cpu_smoke
+drive_root: ""
+
+model:
+  name: HuggingFaceTB/SmolLM2-135M-Instruct
+  max_seq_length: 512
+  load_in_4bit: false
+  attn_implementation: eager
+
+data:
+  target_examples: 32
+  val_fraction: 0.25
+  test_fraction: 0.25
+
+sft:
+  epochs: 1.0
+  max_steps: 2
+  per_device_batch_size: 1
+  gradient_accumulation: 1
+  gradient_checkpointing: false
+  bf16: false
+  logging_steps: 1
+  save_steps: 2
+  output_dir: checkpoints/smoke/sft
+  resume_from_checkpoint: false
+
+dpo:
+  max_steps: 2
+  per_device_batch_size: 1
+  gradient_accumulation: 1
+  bf16: false
+  gradient_checkpointing: false
+  output_dir: checkpoints/smoke/dpo
+  max_pairs: 8
+
+eval:
+  num_examples: 4
+  max_new_tokens: 64
+
+wandb:
+  enabled: false
