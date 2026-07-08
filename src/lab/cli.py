@@ -99,6 +99,48 @@ def eval_run(
     )
 
 
+export_app = typer.Typer(no_args_is_help=True)
+app.add_typer(export_app, name="export", help="Quantized exports")
+
+
+@export_app.command("merge")
+def export_merge(
+    adapter_path: str = typer.Option(""),
+    output_dir: str = typer.Option(""),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.quantization.merge import merge_adapter
+
+    config = setup(overrides or [])
+    target = merge_adapter(config, adapter_path=adapter_path or None, output_dir=output_dir or None)
+    typer.echo(f"merged model saved to {target}")
+
+
+@export_app.command("awq")
+def export_awq(
+    model_path: str = typer.Option(""),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.quantization.awq import export_awq_model
+
+    config = setup(overrides or [])
+    target = export_awq_model(config, model_path=model_path or None)
+    typer.echo(f"awq model saved to {target}")
+
+
+@export_app.command("gguf")
+def export_gguf(
+    model_path: str = typer.Option(""),
+    quant_type: str = typer.Option("Q4_K_M"),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.quantization.gguf import export_gguf_model
+
+    config = setup(overrides or [])
+    target = export_gguf_model(config, model_path=model_path or None, quant_type=quant_type)
+    typer.echo(f"gguf model saved to {target}")
+
+
 @eval_app.command("perplexity")
 def eval_perplexity(
     model_path: str = typer.Option(..., help="Model path"),
