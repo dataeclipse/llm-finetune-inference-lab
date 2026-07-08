@@ -44,6 +44,42 @@ def data_stats(overrides: list[str] = typer.Argument(None)) -> None:
     typer.echo(report_stats(config))
 
 
+train_app = typer.Typer(no_args_is_help=True)
+app.add_typer(train_app, name="train", help="SFT and DPO training")
+
+
+@train_app.command("sft")
+def train_sft(overrides: list[str] = typer.Argument(None)) -> None:
+    from lab.training.sft import run_sft
+
+    config = setup(overrides or [])
+    run_sft(config)
+
+
+@train_app.command("dpo")
+def train_dpo(
+    adapter_path: str = typer.Option("", help="SFT adapter path, defaults to SFT output"),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.training.dpo import run_dpo
+
+    config = setup(overrides or [])
+    run_dpo(config, adapter_path=adapter_path or None)
+
+
+@train_app.command("pairs")
+def train_pairs(
+    base_url: str = typer.Option("http://localhost:8000/v1"),
+    model: str = typer.Option("base"),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.training.pairs import generate_pairs
+
+    config = setup(overrides or [])
+    count = generate_pairs(config, base_url=base_url, model=model)
+    typer.echo(f"collected {count} preference pairs")
+
+
 eval_app = typer.Typer(no_args_is_help=True)
 app.add_typer(eval_app, name="eval", help="Evaluation suites")
 
