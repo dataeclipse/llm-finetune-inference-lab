@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Environments / secrets
+.env
+.env.*
+!.env.example
+
+# ML artifacts — never commit weights or data
+data/
+!data/.gitkeep
+models/
+checkpoints/
+outputs/
+wandb/
+*.safetensors
+*.bin
+*.gguf
+*.awq
+*.pt
+*.ckpt
+
+# Hydra
+multirun/
+.hydra/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Assistant / planning
+CLAUDE.md
+.claude/
