@@ -24,5 +24,25 @@ def config_show(overrides: list[str] = typer.Argument(None)) -> None:
     typer.echo(OmegaConf.to_yaml(OmegaConf.structured(config)))
 
 
+data_app = typer.Typer(no_args_is_help=True)
+app.add_typer(data_app, name="data", help="Dataset preparation")
+
+
+@data_app.command("prepare")
+def data_prepare(overrides: list[str] = typer.Argument(None)) -> None:
+    from lab.data.prepare import prepare_dataset
+
+    config = setup(overrides or [])
+    prepare_dataset(config)
+
+
+@data_app.command("stats")
+def data_stats(overrides: list[str] = typer.Argument(None)) -> None:
+    from lab.data.stats import report_stats
+
+    config = setup(overrides or [])
+    typer.echo(report_stats(config))
+
+
 if __name__ == "__main__":
     app()
