@@ -11,9 +11,7 @@ from lab.logging import get_logger
 logger = get_logger(__name__)
 
 
-def prepare_dataset(
-    config: LabConfig, raw: list[SQLExample] | None = None
-) -> DatasetSummary:
+def prepare_dataset(config: LabConfig, raw: list[SQLExample] | None = None) -> DatasetSummary:
     data_config = config.data
     if raw is None:
         raw = download_raw(data_config)
@@ -26,9 +24,7 @@ def prepare_dataset(
         seed=data_config.seed,
     )
     output_dir = Path(data_config.output_dir)
-    write_jsonl(
-        output_dir / "train.jsonl", [{"messages": to_messages(item)} for item in train]
-    )
+    write_jsonl(output_dir / "train.jsonl", [{"messages": to_messages(item)} for item in train])
     write_jsonl(output_dir / "val.jsonl", [{"messages": to_messages(item)} for item in val])
     write_jsonl(output_dir / "test.jsonl", [item.model_dump() for item in test])
     summary = DatasetSummary(

@@ -44,5 +44,37 @@ def data_stats(overrides: list[str] = typer.Argument(None)) -> None:
     typer.echo(report_stats(config))
 
 
+eval_app = typer.Typer(no_args_is_help=True)
+app.add_typer(eval_app, name="eval", help="Evaluation suites")
+
+
+@eval_app.command("run")
+def eval_run(
+    model_path: str = typer.Option("", help="Model or adapter path, defaults to SFT output"),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.eval.runner import run_eval
+
+    config = setup(overrides or [])
+    report = run_eval(config, model_path=model_path or None)
+    typer.echo(
+        f"{report.model_label}: overall={report.overall_accuracy:.3f} "
+        f"exec={report.execution_accuracy:.3f} valid={report.valid_sql_rate:.3f}"
+    )
+
+
+@eval_app.command("perplexity")
+def eval_perplexity(
+    model_path: str = typer.Option(..., help="Model path"),
+    split: str = typer.Option("val"),
+    overrides: list[str] = typer.Argument(None),
+) -> None:
+    from lab.eval.perplexity import compute_perplexity
+
+    config = setup(overrides or [])
+    value = compute_perplexity(config, model_path, split=split)
+    typer.echo(f"perplexity({split}) = {value:.3f}")
+
+
 if __name__ == "__main__":
     app()
